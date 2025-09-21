@@ -141,10 +141,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 'Add New Project',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
               ),
-              backgroundColor: Colors.white,
+              backgroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -159,10 +159,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       ),
                       child: TextFormField(
                         controller: projectController,
-                        cursorColor: Colors.black,
+                        cursorColor: Colors.white,
+                        style:  TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: Colors.grey.shade300,
+                          fillColor: Colors.grey.shade900,
                           hintText: 'Project name',
                           hintStyle: const TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
@@ -180,7 +181,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         height: 90,
                         width: 150,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: Colors.grey.shade900,
                           borderRadius: BorderRadius.circular(15),
                           image: dialogImageFile != null
                               ? DecorationImage(
@@ -192,13 +193,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         child: dialogImageFile == null
                             ? Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.motion_photos_on, size: 15),
+                                children:  [
+                                  Icon(Icons.camera_alt_outlined,color: Colors.grey.shade600, size: 15),
                                   SizedBox(width: 5),
                                   Text(
                                     'Add Image',
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: Colors.grey.shade600,
                                       fontSize: 15,
                                     ),
                                   ),
@@ -223,7 +224,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade800,
+                    backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -236,7 +237,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   child: const Text(
                     'Add',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

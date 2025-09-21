@@ -29,8 +29,10 @@ class ProjectDetailsScreen extends StatefulWidget {
 
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   List<SubTaskModel> _subtasks = [];
-  final List<TextEditingController> _subtaskControllers =
-      List.generate(2, (index) => TextEditingController());
+  final List<TextEditingController> _subtaskControllers = List.generate(
+    1,
+    (index) => TextEditingController(),
+  );
 
   @override
   void initState() {
@@ -39,8 +41,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   }
 
   void _fetchSubtasks() async {
-    final fetchedSubtasks =
-        await DatabaseService.instance.getSubtasksForProject(widget.projectId);
+    final fetchedSubtasks = await DatabaseService.instance
+        .getSubtasksForProject(widget.projectId);
     setState(() {
       _subtasks = fetchedSubtasks;
     });
@@ -50,11 +52,13 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     final List<SubTaskModel> newSubtasks = [];
     for (var controller in _subtaskControllers) {
       if (controller.text.isNotEmpty) {
-        newSubtasks.add(SubTaskModel(
-          title: controller.text,
-          projectId: widget.projectId,
-          isCompleted: false, 
-        ));
+        newSubtasks.add(
+          SubTaskModel(
+            title: controller.text,
+            projectId: widget.projectId,
+            isCompleted: false,
+          ),
+        );
       }
     }
 
@@ -79,83 +83,105 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     setState(() {
       _subtasks[index] = updatedSubtask;
     });
-    
-    // Update the database
+
     await DatabaseService.instance.updateSubtask(updatedSubtask);
   }
 
-  // New method for deleting a subtask
   void _deleteSubtask(int index) async {
     final subtaskId = _subtasks[index].id;
-    
-    // Remove from the local list
+
     setState(() {
       _subtasks.removeAt(index);
     });
-    
-    // Delete from the database
+
     await DatabaseService.instance.deleteSubtask(subtaskId!);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Subtask deleted.'),
-      ),
-    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Subtask deleted.')));
   }
 
   void _showAddTaskDialog() {
     _subtaskControllers.forEach((controller) => controller.clear());
-    
-    showDialog(
+
+    showGeneralDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.black,
-          title: const Text(
-            'Add Tasks',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var controller in _subtaskControllers)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: controller,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'add task+',
-                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade900,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+      barrierDismissible: true,
+      barrierLabel: "Add Tasks",
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: AlertDialog(
+              backgroundColor: Colors.black,
+              title: const Text(
+                'Add Tasks',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var controller in _subtaskControllers)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          cursorColor: Colors.grey.shade200,
+                          controller: controller,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'add task+',
+                            hintStyle: TextStyle(
+                              color: Colors.white.withOpacity(0.5),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade900,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey),
                   ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _saveSubtasks();
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'Add',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _saveSubtasks();
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-              child: const Text('Add', style: TextStyle(color: Colors.black)),
-            ),
-          ],
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
     );
@@ -166,6 +192,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // Background
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -189,7 +216,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             ),
           ),
 
-          // Main content
+          // Foreground Content
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -199,6 +226,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Top Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -268,15 +296,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                               color: Colors.white,
                             ),
                           ),
+                          
                         ],
                       ),
+                      const SizedBox(height: 50),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 70),
 
-              // Tasks List
               Expanded(
                 child: Container(
                   color: Colors.grey[100],
@@ -284,111 +312,123 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                     horizontal: 20.0,
                     vertical: 20.0,
                   ),
-                  child: Column(
+                  child: SingleChildScrollView(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.title, style: const TextStyle(fontSize: 30)),
-                      const SizedBox(height: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.2),
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Text(
-                            widget.description,
-                            style: const TextStyle(fontSize: 16),
+                      children: [
+                        Text(widget.title, style: const TextStyle(fontSize: 30)),
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5.0),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Text(
+                              widget.description,
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ),
-                          onPressed: _showAddTaskDialog,
-                          child: const Text(
-                            'Add Tasks',
-                            style: TextStyle(color: Colors.white),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                            ),
+                            onPressed: _showAddTaskDialog,
+                            child: const Text(
+                              'Add Tasks',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: _subtasks.isEmpty
-                            ? const Center(child: Text('No tasks found.'))
-                            : ListView.builder(
-                                itemCount: _subtasks.length,
-                                itemBuilder: (context, index) {
-                                  final subtask = _subtasks[index];
-                                  return Dismissible(
-                                    key: ValueKey(subtask.id!),
-                                    direction: DismissDirection.endToStart,
-                                    onDismissed: (direction) => _deleteSubtask(index),
-                                    background: Container(
-                                      color: Colors.red.shade900,
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.only(right: 20),
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                      child: Row(
-                                        children: [
-                                          InkWell(
-                                            onTap: () => _toggleSubtaskCompletion(index),
-                                            child: Container(
-                                              width: 24,
-                                              height: 24,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                border: Border.all(color: Colors.grey),
-                                                color: subtask.isCompleted
-                                                    ? Colors.black
-                                                    : Colors.transparent,
-                                              ),
-                                              child: subtask.isCompleted
-                                                  ? const Icon(
-                                                      Icons.check,
-                                                      color: Colors.white,
-                                                      size: 16,
-                                                    )
-                                                  : null,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 15),
-                                          Expanded(
-                                            child: Text(
-                                              subtask.title,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500,
-                                                color: subtask.isCompleted
-                                                    ? Colors.grey
-                                                    : Colors.black,
-                                                decoration: subtask.isCompleted
-                                                    ? TextDecoration.lineThrough
-                                                    : null,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
+                        const SizedBox(height: 20),
+                        if (_subtasks.isEmpty)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: Text('No tasks found.'),
+                                ),
                               ),
-                      ),
-                    ],
+                            ],
+                          )
+                        else
+                          ..._subtasks.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final subtask = entry.value;
+                            return Dismissible(
+                              key: ValueKey(subtask.id!),
+                              direction: DismissDirection.endToStart,
+                              onDismissed: (direction) => _deleteSubtask(index),
+                              background: Container(
+                                color: Colors.red.shade900,
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                child: const Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                ),
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () =>
+                                          _toggleSubtaskCompletion(index),
+                                      child: Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.grey),
+                                          color: subtask.isCompleted
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                        ),
+                                        child: subtask.isCompleted
+                                            ? const Icon(
+                                                Icons.check,
+                                                color: Colors.white,
+                                                size: 16,
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Expanded(
+                                      child: Text(
+                                        subtask.title,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: subtask.isCompleted
+                                              ? Colors.grey
+                                              : Colors.black,
+                                          decoration: subtask.isCompleted
+                                              ? TextDecoration.lineThrough
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                      ],
+                    ),
                   ),
                 ),
               ),
