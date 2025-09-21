@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:credestest/DataBaseService/dbService.dart';
 import 'package:credestest/modelClass.dart';
+import 'package:credestest/screens/pageLoader.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -73,7 +74,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     await DatabaseService.instance.insertTask(newTask);
     titleController.clear();
     descriptionController.clear();
-    Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> PageLoader()));
   }
 
   void handleDateSelection(String dateLabel) {
